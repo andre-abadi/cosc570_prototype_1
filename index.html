@@ -368,26 +368,34 @@
 
           <div id="sync-options-pane" class="card card-soft mb-3 d-none">
             <div class="card-body">
-              <h2 class="h5 fw-bold mb-1">Choose what to sync</h2>
-              <p class="text-secondary small mb-3">
-                Select sync options for each unit. Choices not enabled on the home screen are unavailable here.
-              </p>
+              <div id="sync-table-view">
+                <h2 class="h5 fw-bold mb-1">Choose what to sync</h2>
+                <p class="text-secondary small mb-3">
+                  Select sync options for each unit. Choices not enabled on the home screen are unavailable here.
+                </p>
 
-              <div class="table-responsive">
-                <table class="table sync-table align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th>Unit</th>
-                      <th>Contact sync</th>
-                      <th>Assessment sync</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sync-matrix-body">
-                    <tr>
-                      <td colspan="3" class="small text-secondary">Select units above to load sync options.</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="table-responsive">
+                  <table class="table sync-table align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>Unit</th>
+                        <th>Contact sync</th>
+                        <th>Assessment sync</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sync-matrix-body">
+                      <tr>
+                        <td colspan="3" class="small text-secondary">Select units above to load sync options.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="sync-empty-view" class="d-none text-center py-3">
+                <h2 class="h5 fw-bold mb-2">No sync options selected</h2>
+                <p class="text-secondary small mb-3">Try the alerts page instead.</p>
+                <button id="sync-to-alerts-btn" class="btn btn-success w-100" type="button">Continue</button>
               </div>
             </div>
           </div>
@@ -439,6 +447,9 @@
       const syncLoginStatus = document.getElementById('sync-login-status');
       const syncLoginPane = document.getElementById('sync-login-pane');
       const syncOptionsPane = document.getElementById('sync-options-pane');
+      const syncTableView = document.getElementById('sync-table-view');
+      const syncEmptyView = document.getElementById('sync-empty-view');
+      const syncToAlertsButton = document.getElementById('sync-to-alerts-btn');
       const syncMatrixBody = document.getElementById('sync-matrix-body');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
@@ -491,10 +502,21 @@
           .map((input) => input.value);
         const selectedUnits = Array.from(unitInputs)
           .filter((input) => input.checked)
-          .map((input) => input.closest('[data-unit-card]').querySelector('.fw-semibold').textContent.trim());
+          .map((input) => {
+            const fullName = input.closest('[data-unit-card]').querySelector('.fw-semibold').textContent.trim();
+            return fullName.split(' ')[0];
+          });
 
         const contactEnabled = selectedPreferences.includes('Synchronising contact time');
         const assessmentEnabled = selectedPreferences.includes('Synchronising assessments');
+        const hasAnySyncOption = contactEnabled || assessmentEnabled;
+
+        syncTableView.classList.toggle('d-none', !hasAnySyncOption);
+        syncEmptyView.classList.toggle('d-none', hasAnySyncOption);
+
+        if (!hasAnySyncOption) {
+          return;
+        }
 
         if (selectedUnits.length === 0) {
           syncMatrixBody.innerHTML = `
@@ -586,6 +608,10 @@
         buildSyncMatrix();
         syncLoginPane.classList.add('d-none');
         syncOptionsPane.classList.remove('d-none');
+      });
+
+      syncToAlertsButton.addEventListener('click', () => {
+        showScreen('alerts');
       });
 
       updatePreferenceSummary();
