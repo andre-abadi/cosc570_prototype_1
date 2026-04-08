@@ -401,9 +401,9 @@
                   </table>
                 </div>
 
-                <button id="sync-table-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Continue</button>
+                <button id="sync-table-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Sync</button>
+                <button id="sync-table-continue-btn" class="btn btn-success w-100 mt-3 d-none" type="button">Continue</button>
                 <div id="sync-progress-status" class="small text-center mt-2 d-none"></div>
-                <button id="sync-table-continue-btn" class="btn btn-success w-100 mt-2 d-none" type="button">Continue</button>
               </div>
 
               <div id="sync-empty-view" class="d-none text-center py-3">
@@ -542,7 +542,7 @@
 
         syncTableActionButton.classList.remove('d-none');
         syncTableActionButton.disabled = true;
-        syncTableActionButton.innerHTML = 'Continue';
+        syncTableActionButton.innerHTML = 'Sync';
         syncProgressStatus.textContent = '';
         syncProgressStatus.className = 'small text-center mt-2 d-none';
         syncTableContinueButton.classList.add('d-none');
@@ -562,6 +562,8 @@
 
         syncTableActionButton.classList.remove('d-none');
         syncTableContinueButton.classList.add('d-none');
+        syncProgressStatus.className = 'small text-center mt-2 d-none';
+        syncProgressStatus.textContent = '';
         syncTableActionButton.disabled = syncInProgress || !anySelected;
       }
 
@@ -713,13 +715,13 @@
           </table>
 
           <button id="alerts-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Alert me</button>
+          <button id="alerts-continue-btn" class="btn btn-success w-100 mt-3 d-none" type="button">Continue</button>
           <div id="alerts-progress-status" class="small text-center mt-2 d-none"></div>
-          <button id="alerts-continue-btn" class="btn btn-success w-100 mt-2 d-none" type="button">Continue</button>
         `;
 
         const alertsActionButton = document.getElementById('alerts-action-btn');
-        const alertsProgressStatus = document.getElementById('alerts-progress-status');
         const alertsContinueButton = document.getElementById('alerts-continue-btn');
+        const alertsProgressStatus = document.getElementById('alerts-progress-status');
         const alertsOptions = document.querySelectorAll('.alerts-option');
 
         const updateAlertsActionState = () => {
@@ -735,6 +737,8 @@
 
           alertsActionButton.classList.remove('d-none');
           alertsContinueButton.classList.add('d-none');
+          alertsProgressStatus.className = 'small text-center mt-2 d-none';
+          alertsProgressStatus.textContent = '';
           alertsActionButton.disabled = alertsInProgress || !anySelected;
         };
 
