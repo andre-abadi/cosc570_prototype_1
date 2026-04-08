@@ -145,22 +145,8 @@
         min-width: 150px;
       }
 
-      .sync-pill {
-        display: inline-block;
-        border-radius: 999px;
-        padding: 0.3rem 0.65rem;
-        font-size: 0.75rem;
-        font-weight: 700;
-      }
-
-      .sync-pill.active {
-        background: var(--une-green-soft);
-        color: var(--une-green-dark);
-      }
-
-      .sync-pill.disabled {
-        background: #e9ecef;
-        color: #7b8680;
+      .sync-cell-disabled {
+        opacity: 0.45;
       }
 
       .bottom-nav {
@@ -342,19 +328,19 @@
           </div>
         </section>
 
-        <section class="screen" data-screen="share">
-          <div class="card card-soft mb-3">
+        <section class="screen" data-screen="sync">
+          <div id="sync-login-pane" class="card card-soft mb-3">
             <div class="card-body">
               <h2 class="h5 fw-bold mb-1">Connect your calendar</h2>
               <p class="text-secondary small mb-3">
                 This mock sign-in works with <strong>Google Calendar</strong> or <strong>Microsoft Outlook</strong>. Use the pre-filled details or enter your own to continue.
               </p>
 
-              <form id="share-login-form">
+              <form id="sync-login-form">
                 <div class="mb-3">
-                  <label for="share-email" class="form-label fw-semibold">Email</label>
+                  <label for="sync-email" class="form-label fw-semibold">Email</label>
                   <input
-                    id="share-email"
+                    id="sync-email"
                     class="form-control"
                     type="email"
                     value="student.sync@gmail.com"
@@ -363,9 +349,9 @@
                 </div>
 
                 <div class="mb-3">
-                  <label for="share-password" class="form-label fw-semibold">Password</label>
+                  <label for="sync-password" class="form-label fw-semibold">Password</label>
                   <input
-                    id="share-password"
+                    id="sync-password"
                     class="form-control"
                     type="password"
                     value="CalendarFlow!42"
@@ -373,20 +359,18 @@
                   />
                 </div>
 
-                <div id="share-login-status" class="small mb-3"></div>
+                <div id="sync-login-status" class="small mb-3"></div>
 
-                <button id="share-continue-btn" class="btn btn-success w-100" type="submit">Continue</button>
+                <button class="btn btn-success w-100" type="submit">Continue</button>
               </form>
             </div>
           </div>
-        </section>
 
-        <section class="screen" data-screen="alerts">
-          <div class="card card-soft">
+          <div id="sync-options-pane" class="card card-soft mb-3 d-none">
             <div class="card-body">
               <h2 class="h5 fw-bold mb-1">Choose what to sync</h2>
               <p class="text-secondary small mb-3">
-                Review sync options for each selected unit. Items not chosen on the home screen are greyed out.
+                Select sync options for each unit. Choices not enabled on the home screen are unavailable here.
               </p>
 
               <div class="table-responsive">
@@ -400,11 +384,19 @@
                   </thead>
                   <tbody id="sync-matrix-body">
                     <tr>
-                      <td colspan="3" class="small text-secondary">Sign in above to load sync options.</td>
+                      <td colspan="3" class="small text-secondary">Select units above to load sync options.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="alerts">
+          <div class="card card-soft">
+            <div class="card-body text-center py-5">
+              <h2 class="h4 fw-bold mb-0">PSHGSJH</h2>
             </div>
           </div>
         </section>
@@ -420,9 +412,9 @@
             <span class="nav-icon">📚</span>
             LMS
           </button>
-          <button class="nav-btn" data-target="share" type="button">
+          <button class="nav-btn" data-target="sync" type="button">
             <span class="nav-icon">📅</span>
-            Share
+            Sync
           </button>
           <button class="nav-btn" data-target="alerts" type="button">
             <span class="nav-icon">🔔</span>
@@ -441,10 +433,12 @@
       const lmsContinueButton = document.getElementById('lms-continue-btn');
       const unitCards = document.querySelectorAll('[data-unit-card]');
       const unitInputs = document.querySelectorAll('[data-unit-card] input');
-      const shareLoginForm = document.getElementById('share-login-form');
-      const shareEmailInput = document.getElementById('share-email');
-      const sharePasswordInput = document.getElementById('share-password');
-      const shareLoginStatus = document.getElementById('share-login-status');
+      const syncLoginForm = document.getElementById('sync-login-form');
+      const syncEmailInput = document.getElementById('sync-email');
+      const syncPasswordInput = document.getElementById('sync-password');
+      const syncLoginStatus = document.getElementById('sync-login-status');
+      const syncLoginPane = document.getElementById('sync-login-pane');
+      const syncOptionsPane = document.getElementById('sync-options-pane');
       const syncMatrixBody = document.getElementById('sync-matrix-body');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
@@ -462,7 +456,7 @@
           button.classList.toggle('active', button.dataset.target === target);
         });
 
-        if (target === 'alerts') {
+        if (target === 'sync' && !syncOptionsPane.classList.contains('d-none')) {
           buildSyncMatrix();
         }
       }
@@ -513,18 +507,14 @@
 
         syncMatrixBody.innerHTML = selectedUnits
           .map(
-            (unit) => `
+            (unit, index) => `
               <tr>
                 <td class="sync-unit-cell">${unit}</td>
-                <td>
-                  <span class="sync-pill ${contactEnabled ? 'active' : 'disabled'}">
-                    ${contactEnabled ? 'Enabled' : 'Greyed out'}
-                  </span>
+                <td class="text-center ${contactEnabled ? '' : 'sync-cell-disabled'}">
+                  <input class="form-check-input" type="checkbox" id="contact-sync-${index}" ${contactEnabled ? '' : 'disabled'} />
                 </td>
-                <td>
-                  <span class="sync-pill ${assessmentEnabled ? 'active' : 'disabled'}">
-                    ${assessmentEnabled ? 'Enabled' : 'Greyed out'}
-                  </span>
+                <td class="text-center ${assessmentEnabled ? '' : 'sync-cell-disabled'}">
+                  <input class="form-check-input" type="checkbox" id="assessment-sync-${index}" ${assessmentEnabled ? '' : 'disabled'} />
                 </td>
               </tr>
             `
@@ -552,7 +542,7 @@
 
       lmsContinueButton.addEventListener('click', () => {
         if (!lmsContinueButton.disabled) {
-          showScreen('share');
+          showScreen('sync');
         }
       });
 
@@ -579,22 +569,23 @@
         lmsUnitsPane.classList.remove('d-none');
       });
 
-      shareLoginForm.addEventListener('submit', (event) => {
+      syncLoginForm.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const email = shareEmailInput.value.trim();
-        const password = sharePasswordInput.value.trim();
+        const email = syncEmailInput.value.trim();
+        const password = syncPasswordInput.value.trim();
 
         if (!email || !password) {
-          shareLoginStatus.className = 'small text-danger mb-3';
-          shareLoginStatus.textContent = 'Use the pre-filled details or enter any email and password to continue.';
+          syncLoginStatus.className = 'small text-danger mb-3';
+          syncLoginStatus.textContent = 'Use the pre-filled details or enter any email and password to continue.';
           return;
         }
 
-        shareLoginStatus.className = 'small mb-3';
-        shareLoginStatus.textContent = '';
+        syncLoginStatus.className = 'small mb-3';
+        syncLoginStatus.textContent = '';
         buildSyncMatrix();
-        showScreen('alerts');
+        syncLoginPane.classList.add('d-none');
+        syncOptionsPane.classList.remove('d-none');
       });
 
       updatePreferenceSummary();
