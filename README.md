@@ -1,2 +1,12 @@
-# cosc570_prototype_1
-prototype app for une cosc570 user experience and interaction design a.k.a cosc370
+# UNE Student Sync Prototype
+
+A low-fidelity web prototype for a university course project.
+
+## Run
+Open `index.html` in a browser.
+
+## Stack
+- HTML
+- Bootstrap
+- JavaScript
+
