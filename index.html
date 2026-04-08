@@ -693,14 +693,14 @@
                   (unit) => `
                     <tr>
                       <td class="sync-unit-cell">${unit}</td>
-                      <td class="text-center ${summariesEnabled ? '' : 'sync-cell-disabled'}">
-                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? 'checked' : 'disabled'} />
+                      <td class="text-center">
+                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? 'checked' : ''} />
                       </td>
-                      <td class="text-center ${summariesEnabled ? '' : 'sync-cell-disabled'}">
-                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? '' : 'disabled'} />
+                      <td class="text-center">
+                        <input class="form-check-input" type="checkbox" />
                       </td>
-                      <td class="text-center ${notificationsEnabled ? '' : 'sync-cell-disabled'}">
-                        <input class="form-check-input" type="checkbox" ${notificationsEnabled ? '' : 'disabled'} />
+                      <td class="text-center">
+                        <input class="form-check-input" type="checkbox" ${notificationsEnabled ? 'checked' : ''} />
                       </td>
                     </tr>
                   `
