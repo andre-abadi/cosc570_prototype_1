@@ -391,7 +391,9 @@
                   </table>
                 </div>
 
-                <button id="sync-table-continue-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Continue</button>
+                <button id="sync-table-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Continue</button>
+                <div id="sync-progress-status" class="small text-center mt-2 d-none"></div>
+                <button id="sync-table-continue-btn" class="btn btn-success w-100 mt-2 d-none" type="button">Continue</button>
               </div>
 
               <div id="sync-empty-view" class="d-none text-center py-3">
@@ -452,6 +454,8 @@
       const syncTableView = document.getElementById('sync-table-view');
       const syncEmptyView = document.getElementById('sync-empty-view');
       const syncToAlertsButton = document.getElementById('sync-to-alerts-btn');
+      const syncTableActionButton = document.getElementById('sync-table-action-btn');
+      const syncProgressStatus = document.getElementById('sync-progress-status');
       const syncTableContinueButton = document.getElementById('sync-table-continue-btn');
       const syncMatrixBody = document.getElementById('sync-matrix-body');
       const lmsLoginForm = document.getElementById('lms-login-form');
@@ -460,6 +464,9 @@
       const lmsLoginStatus = document.getElementById('lms-login-status');
       const lmsLoginPane = document.getElementById('lms-login-pane');
       const lmsUnitsPane = document.getElementById('lms-units-pane');
+      let syncCompleted = false;
+      let syncInProgress = false;
+      let syncProgressTimer = null;
 
       function showScreen(target) {
         screens.forEach((screen) => {
@@ -485,6 +492,7 @@
           card.classList.toggle('selected', checkbox.checked);
         });
 
+        resetSyncTableState();
         homeContinueButton.disabled = selected.length === 0;
       }
 
@@ -496,14 +504,42 @@
           card.classList.toggle('selected', checkbox.checked);
         });
 
+        resetSyncTableState();
         lmsContinueButton.disabled = selectedUnits.length === 0;
+      }
+
+      function resetSyncTableState() {
+        syncCompleted = false;
+        syncInProgress = false;
+
+        if (syncProgressTimer) {
+          clearTimeout(syncProgressTimer);
+          syncProgressTimer = null;
+        }
+
+        syncTableActionButton.classList.remove('d-none');
+        syncTableActionButton.disabled = true;
+        syncTableActionButton.innerHTML = 'Continue';
+        syncProgressStatus.textContent = '';
+        syncProgressStatus.className = 'small text-center mt-2 d-none';
+        syncTableContinueButton.classList.add('d-none');
       }
 
       function updateSyncContinueButton() {
         const anySelected = Array.from(document.querySelectorAll('#sync-matrix-body input[type="checkbox"]'))
           .some((input) => input.checked && !input.disabled);
 
-        syncTableContinueButton.disabled = !anySelected;
+        if (syncCompleted) {
+          syncTableActionButton.classList.add('d-none');
+          syncTableContinueButton.classList.remove('d-none');
+          syncProgressStatus.className = 'small text-success text-center mt-2';
+          syncProgressStatus.textContent = 'Done';
+          return;
+        }
+
+        syncTableActionButton.classList.remove('d-none');
+        syncTableContinueButton.classList.add('d-none');
+        syncTableActionButton.disabled = syncInProgress || !anySelected;
       }
 
       function buildSyncMatrix() {
@@ -523,7 +559,6 @@
 
         syncTableView.classList.toggle('d-none', !hasAnySyncOption);
         syncEmptyView.classList.toggle('d-none', hasAnySyncOption);
-        syncTableContinueButton.disabled = true;
 
         if (!hasAnySyncOption) {
           return;
@@ -535,6 +570,7 @@
               <td colspan="3" class="small text-secondary">No units selected yet.</td>
             </tr>
           `;
+          updateSyncContinueButton();
           return;
         }
 
@@ -557,6 +593,8 @@
         document.querySelectorAll('#sync-matrix-body input[type="checkbox"]').forEach((input) => {
           input.addEventListener('change', updateSyncContinueButton);
         });
+
+        updateSyncContinueButton();
       }
 
       navButtons.forEach((button) => {
@@ -627,6 +665,25 @@
 
       syncToAlertsButton.addEventListener('click', () => {
         showScreen('alerts');
+      });
+
+      syncTableActionButton.addEventListener('click', () => {
+        if (syncTableActionButton.disabled || syncInProgress) {
+          return;
+        }
+
+        syncInProgress = true;
+        syncTableActionButton.disabled = true;
+        syncTableActionButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Syncing...';
+        syncProgressStatus.className = 'small text-secondary text-center mt-2';
+        syncProgressStatus.textContent = 'Syncing selected items...';
+
+        syncProgressTimer = setTimeout(() => {
+          syncInProgress = false;
+          syncCompleted = true;
+          syncProgressTimer = null;
+          updateSyncContinueButton();
+        }, 2200);
       });
 
       syncTableContinueButton.addEventListener('click', () => {
