@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UNE Student Sync Prototype</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <style>
+      :root {
+        --une-green: #006b3f;
+        --une-green-dark: #004f2e;
+        --une-green-soft: #e9f6ef;
+        --une-accent: #7bc67b;
+        --app-bg: #f4f7f5;
+        --text-main: #1f2a24;
+      }
+
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #eef7f1 0%, #f8fbf9 100%);
+        color: var(--text-main);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .app-shell {
+        max-width: 430px;
+        min-height: 100vh;
+        margin: 0 auto;
+        background: #ffffff;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .app-header {
+        background: linear-gradient(135deg, var(--une-green) 0%, var(--une-green-dark) 100%);
+        color: white;
+        padding: 1rem 1rem 1.25rem;
+      }
+
+      .brand-badge {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        display: inline-block;
+        font-size: 0.78rem;
+        padding: 0.35rem 0.7rem;
+      }
+
+      .content-area {
+        background: var(--app-bg);
+        padding: 1rem 1rem 5.5rem;
+        min-height: calc(100vh - 120px);
+      }
+
+      .screen {
+        display: none;
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      .card-soft {
+        border: 0;
+        border-radius: 1rem;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      }
+
+      .soft-panel {
+        background: var(--une-green-soft);
+        border: 1px solid #d4eadc;
+        border-radius: 0.9rem;
+      }
+
+      .section-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--une-green-dark);
+        margin-bottom: 0.65rem;
+      }
+
+      .placeholder-box {
+        border: 2px dashed #b9d8c3;
+        border-radius: 0.9rem;
+        background: #fcfffd;
+        padding: 1rem;
+      }
+
+      .mini-stat {
+        background: #ffffff;
+        border-radius: 0.85rem;
+        padding: 0.85rem;
+        border: 1px solid #e1ece5;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ffffff;
+        border-top: 1px solid #e6ece8;
+        padding: 0.6rem 0.5rem calc(0.6rem + env(safe-area-inset-bottom));
+      }
+
+      .nav-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.4rem;
+      }
+
+      .nav-btn {
+        border: 0;
+        background: transparent;
+        border-radius: 0.8rem;
+        padding: 0.5rem 0.2rem;
+        color: #5b6a60;
+        font-size: 0.72rem;
+        font-weight: 600;
+      }
+
+      .nav-btn.active {
+        background: var(--une-green-soft);
+        color: var(--une-green-dark);
+      }
+
+      .nav-icon {
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 0.15rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <span class="brand-badge">University of New England Prototype</span>
+        <h1 class="h4 fw-bold mt-3 mb-1">UNE Student Sync</h1>
+        <p class="mb-0 small opacity-75">
+          Single-page mobile-friendly webapp shell for your LMS, calendar, and notification mockup.
+        </p>
+      </header>
+
+      <main class="content-area">
+        <section class="screen active" data-screen="home">
+          <div class="card card-soft mb-3">
+            <div class="card-body">
+              <h2 class="h5 fw-bold mb-2">Welcome</h2>
+              <p class="text-secondary mb-3">
+                This starter file is ready for you to drop in each page of your prototype while keeping the app in one place.
+              </p>
+              <div class="soft-panel p-3">
+                <div class="section-title">Suggested flow</div>
+                <ol class="mb-0 ps-3 small">
+                  <li>Select LMS data to share</li>
+                  <li>Configure calendar sync settings</li>
+                  <li>Set change notifications</li>
+                  <li>Review and confirm preferences</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="mini-stat">
+                <div class="small text-secondary">Theme</div>
+                <div class="fw-bold">UNE Green</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="mini-stat">
+                <div class="small text-secondary">Layout</div>
+                <div class="fw-bold">Mobile SPA</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="placeholder-box">
+            <strong>Start editing here</strong>
+            <p class="small text-secondary mb-0 mt-2">
+              Replace these placeholder cards with your actual prototype screens and form elements.
+            </p>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="lms">
+          <div class="card card-soft">
+            <div class="card-body">
+              <h2 class="h5 fw-bold">LMS Data Screen</h2>
+              <p class="text-secondary small">Use this section for course selection, due dates, timetable items, or announcements.</p>
+              <div class="placeholder-box mt-3">
+                Add checkboxes, cards, or list items here.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="share">
+          <div class="card card-soft">
+            <div class="card-body">
+              <h2 class="h5 fw-bold">Calendar Sharing Screen</h2>
+              <p class="text-secondary small">Use this area for sync options, destination calendar choices, and sharing preferences.</p>
+              <div class="placeholder-box mt-3">
+                Add toggles, dropdowns, or radio buttons here.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="alerts">
+          <div class="card card-soft">
+            <div class="card-body">
+              <h2 class="h5 fw-bold">Notifications Screen</h2>
+              <p class="text-secondary small">Use this section for reminder settings and change notification preferences.</p>
+              <div class="placeholder-box mt-3">
+                Add switches, schedules, or alert settings here.
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav">
+        <div class="nav-grid">
+          <button class="nav-btn active" data-target="home" type="button">
+            <span class="nav-icon">🏠</span>
+            Home
+          </button>
+          <button class="nav-btn" data-target="lms" type="button">
+            <span class="nav-icon">📚</span>
+            LMS
+          </button>
+          <button class="nav-btn" data-target="share" type="button">
+            <span class="nav-icon">📅</span>
+            Share
+          </button>
+          <button class="nav-btn" data-target="alerts" type="button">
+            <span class="nav-icon">🔔</span>
+            Alerts
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <script>
+      const navButtons = document.querySelectorAll('[data-target]');
+      const screens = document.querySelectorAll('[data-screen]');
+
+      function showScreen(target) {
+        screens.forEach((screen) => {
+          screen.classList.toggle('active', screen.dataset.screen === target);
+        });
+
+        navButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.target === target);
+        });
+      }
+
+      navButtons.forEach((button) => {
+        button.addEventListener('click', () => showScreen(button.dataset.target));
+      });
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
