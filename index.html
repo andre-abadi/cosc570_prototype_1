@@ -483,6 +483,9 @@
       let syncCompleted = false;
       let syncInProgress = false;
       let syncProgressTimer = null;
+      let alertsCompleted = false;
+      let alertsInProgress = false;
+      let alertsProgressTimer = null;
 
       function showScreen(target) {
         screens.forEach((screen) => {
@@ -694,13 +697,13 @@
                     <tr>
                       <td class="sync-unit-cell">${unit}</td>
                       <td class="text-center">
-                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? 'checked' : ''} />
+                        <input class="form-check-input alerts-option" type="checkbox" ${summariesEnabled ? 'checked' : ''} />
                       </td>
                       <td class="text-center">
-                        <input class="form-check-input" type="checkbox" />
+                        <input class="form-check-input alerts-option" type="checkbox" />
                       </td>
                       <td class="text-center">
-                        <input class="form-check-input" type="checkbox" ${notificationsEnabled ? 'checked' : ''} />
+                        <input class="form-check-input alerts-option" type="checkbox" ${notificationsEnabled ? 'checked' : ''} />
                       </td>
                     </tr>
                   `
@@ -708,7 +711,61 @@
                 .join('')}
             </tbody>
           </table>
+
+          <button id="alerts-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Alert me</button>
+          <div id="alerts-progress-status" class="small text-center mt-2 d-none"></div>
+          <button id="alerts-continue-btn" class="btn btn-success w-100 mt-2 d-none" type="button">Continue</button>
         `;
+
+        const alertsActionButton = document.getElementById('alerts-action-btn');
+        const alertsProgressStatus = document.getElementById('alerts-progress-status');
+        const alertsContinueButton = document.getElementById('alerts-continue-btn');
+        const alertsOptions = document.querySelectorAll('.alerts-option');
+
+        const updateAlertsActionState = () => {
+          const anySelected = Array.from(alertsOptions).some((input) => input.checked);
+
+          if (alertsCompleted) {
+            alertsActionButton.classList.add('d-none');
+            alertsContinueButton.classList.remove('d-none');
+            alertsProgressStatus.className = 'small text-success text-center mt-2';
+            alertsProgressStatus.textContent = 'Done';
+            return;
+          }
+
+          alertsActionButton.classList.remove('d-none');
+          alertsContinueButton.classList.add('d-none');
+          alertsActionButton.disabled = alertsInProgress || !anySelected;
+        };
+
+        alertsOptions.forEach((input) => {
+          input.addEventListener('change', updateAlertsActionState);
+        });
+
+        alertsActionButton.addEventListener('click', () => {
+          if (alertsActionButton.disabled || alertsInProgress) {
+            return;
+          }
+
+          alertsInProgress = true;
+          alertsActionButton.disabled = true;
+          alertsActionButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Alerting...';
+          alertsProgressStatus.className = 'small text-secondary text-center mt-2';
+          alertsProgressStatus.textContent = 'Saving alert preferences...';
+
+          alertsProgressTimer = setTimeout(() => {
+            alertsInProgress = false;
+            alertsCompleted = true;
+            alertsProgressTimer = null;
+            updateAlertsActionState();
+          }, 2200);
+        });
+
+        alertsContinueButton.addEventListener('click', () => {
+          showScreen('home');
+        });
+
+        updateAlertsActionState();
       }
 
       navButtons.forEach((button) => {
