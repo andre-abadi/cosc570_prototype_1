@@ -171,8 +171,7 @@
   <body>
     <div class="app-shell">
       <header class="app-header">
-        <span class="brand-badge">University of New England Prototype</span>
-        <h1 class="h4 fw-bold mt-3 mb-1">UNE Student Sync</h1>
+        <h1 class="h4 fw-bold mb-1">UNE Student Sync</h1>
         <p class="mb-0 small opacity-75">
           Single-page mobile-friendly webapp shell for your LMS, calendar, and notification mockup.
         </p>
@@ -236,22 +235,13 @@
             </div>
           </div>
 
-          <div class="card card-soft">
-            <div class="card-body d-flex justify-content-between align-items-center gap-3">
-              <div>
-                <div class="fw-semibold">Next step</div>
-                <div class="small text-secondary">Mock details and follow-up selections will go here later.</div>
-              </div>
-              <button class="btn btn-success" type="button" disabled>Continue</button>
-            </div>
-          </div>
+          <button id="home-continue-btn" class="btn btn-success w-100" type="button" disabled>Continue</button>
         </section>
 
         <section class="screen" data-screen="lms">
-          <div class="card card-soft mb-3">
+          <div id="lms-login-pane" class="card card-soft mb-3">
             <div class="card-body">
-              <span class="brand-badge text-bg-light text-dark border-0">Mock login</span>
-              <h2 class="h5 fw-bold mt-2 mb-1">Connect to the UNE LMS</h2>
+              <h2 class="h5 fw-bold mb-1">Connect to the UNE LMS</h2>
               <p class="text-secondary small mb-3">
                 Sign in with your student details to continue. This is only a prototype, so any email ending in <strong>@myune.edu.au</strong> will work.
               </p>
@@ -279,16 +269,60 @@
                   />
                 </div>
 
-                <div class="mock-note p-3 small text-secondary mb-3">
-                  <strong>Prototype note:</strong> users can change both fields, and any `@myune.edu.au` address is treated as a valid mock login.
-                </div>
-
-                <div id="lms-login-status" class="small text-secondary mb-3">
-                  Ready to sign in.
-                </div>
+                <div id="lms-login-status" class="small mb-3"></div>
 
                 <button class="btn btn-success w-100" type="submit">Sign in to LMS</button>
               </form>
+            </div>
+          </div>
+
+          <div id="lms-units-pane" class="card card-soft mb-3 d-none">
+            <div class="card-body">
+              <h2 class="h5 fw-bold mb-1">Select units to use</h2>
+              <p class="text-secondary small mb-3">
+                Choose which units should act as data sources for the rest of the prototype.
+              </p>
+
+              <div class="d-grid gap-2" id="lms-units">
+                <label class="preference-option" data-unit-card>
+                  <div class="d-flex gap-3 align-items-start">
+                    <input class="form-check-input" type="checkbox" />
+                    <div>
+                      <div class="fw-semibold">COSC570 User Experience and Interaction Design</div>
+                      <div class="small text-secondary">Interaction design and UX content</div>
+                    </div>
+                  </div>
+                </label>
+                <label class="preference-option" data-unit-card>
+                  <div class="d-flex gap-3 align-items-start">
+                    <input class="form-check-input" type="checkbox" />
+                    <div>
+                      <div class="fw-semibold">COSC551 Deep Learning</div>
+                      <div class="small text-secondary">Neural networks and machine learning topics</div>
+                    </div>
+                  </div>
+                </label>
+                <label class="preference-option" data-unit-card>
+                  <div class="d-flex gap-3 align-items-start">
+                    <input class="form-check-input" type="checkbox" />
+                    <div>
+                      <div class="fw-semibold">STAT420 Advanced Statistical Modelling</div>
+                      <div class="small text-secondary">Modelling-focused assessment and timetable data</div>
+                    </div>
+                  </div>
+                </label>
+                <label class="preference-option" data-unit-card>
+                  <div class="d-flex gap-3 align-items-start">
+                    <input class="form-check-input" type="checkbox" />
+                    <div>
+                      <div class="fw-semibold">STAT430 Statistical Learning</div>
+                      <div class="small text-secondary">Statistical learning materials and updates</div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+
+              <button id="lms-continue-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Continue</button>
             </div>
           </div>
         </section>
@@ -345,10 +379,16 @@
       const screens = document.querySelectorAll('[data-screen]');
       const preferenceCards = document.querySelectorAll('[data-option-card]');
       const preferenceInputs = document.querySelectorAll('[data-option-card] input');
+      const homeContinueButton = document.getElementById('home-continue-btn');
+      const lmsContinueButton = document.getElementById('lms-continue-btn');
+      const unitCards = document.querySelectorAll('[data-unit-card]');
+      const unitInputs = document.querySelectorAll('[data-unit-card] input');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
       const lmsPasswordInput = document.getElementById('lms-password');
       const lmsLoginStatus = document.getElementById('lms-login-status');
+      const lmsLoginPane = document.getElementById('lms-login-pane');
+      const lmsUnitsPane = document.getElementById('lms-units-pane');
 
       function showScreen(target) {
         screens.forEach((screen) => {
@@ -370,9 +410,18 @@
           card.classList.toggle('selected', checkbox.checked);
         });
 
-        if (selected.length === 0) {
-          return;
-        }
+        homeContinueButton.disabled = selected.length === 0;
+      }
+
+      function updateUnitSelectionUI() {
+        const selectedUnits = Array.from(unitInputs).filter((input) => input.checked);
+
+        unitCards.forEach((card) => {
+          const checkbox = card.querySelector('input');
+          card.classList.toggle('selected', checkbox.checked);
+        });
+
+        lmsContinueButton.disabled = selectedUnits.length === 0;
       }
 
       navButtons.forEach((button) => {
@@ -381,6 +430,22 @@
 
       preferenceInputs.forEach((input) => {
         input.addEventListener('change', updatePreferenceSummary);
+      });
+
+      unitInputs.forEach((input) => {
+        input.addEventListener('change', updateUnitSelectionUI);
+      });
+
+      homeContinueButton.addEventListener('click', () => {
+        if (!homeContinueButton.disabled) {
+          showScreen('lms');
+        }
+      });
+
+      lmsContinueButton.addEventListener('click', () => {
+        if (!lmsContinueButton.disabled) {
+          showScreen('share');
+        }
       });
 
       lmsLoginForm.addEventListener('submit', (event) => {
@@ -402,11 +467,12 @@
           return;
         }
 
-        lmsLoginStatus.className = 'small text-success mb-3';
-        lmsLoginStatus.textContent = `Mock login accepted for ${email}.`;
+        lmsLoginPane.classList.add('d-none');
+        lmsUnitsPane.classList.remove('d-none');
       });
 
       updatePreferenceSummary();
+      updateUnitSelectionUI();
     </script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
