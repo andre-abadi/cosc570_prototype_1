@@ -130,19 +130,29 @@
         border-radius: 0.85rem;
       }
 
+      .sync-table {
+        table-layout: fixed;
+        width: 100%;
+      }
+
       .sync-table th {
-        font-size: 0.78rem;
+        font-size: 0.7rem;
         color: #516056;
         white-space: nowrap;
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
       }
 
       .sync-table td {
         vertical-align: middle;
+        padding-left: 0.35rem;
+        padding-right: 0.35rem;
       }
 
       .sync-unit-cell {
         font-weight: 600;
-        min-width: 150px;
+        width: 34%;
+        word-break: break-word;
       }
 
       .sync-cell-disabled {
@@ -408,9 +418,9 @@
         <section class="screen" data-screen="alerts">
           <div class="card card-soft">
             <div class="card-body">
-              <h2 class="h5 fw-bold mb-1">Alerts</h2>
+              <h2 class="h5 fw-bold mb-1">Choose alert options</h2>
               <p class="text-secondary small mb-3">
-                Set up forum summary options here. Content change notifications can be added next.
+                Select summary and change alert options for each chosen unit.
               </p>
 
               <div id="alerts-summary-section"></div>
@@ -618,7 +628,26 @@
             return fullName.split(' ')[0];
           });
         const summariesEnabled = selectedPreferences.includes('Summaries of forums');
+        const notificationsEnabled = selectedPreferences.includes('Notifications if content changes');
+        const hasAnyAlertOption = summariesEnabled || notificationsEnabled;
         const syncLoggedIn = syncLoginPane.classList.contains('d-none');
+
+        if (!hasAnyAlertOption) {
+          alertsSummarySection.innerHTML = `
+            <div class="soft-panel p-3 text-center">
+              <div class="section-title">No alert options selected</div>
+              <p class="small text-secondary mb-3">
+                Try the Home page instead.
+              </p>
+              <button id="alerts-to-home-btn" class="btn btn-success w-100" type="button">Continue</button>
+            </div>
+          `;
+
+          document.getElementById('alerts-to-home-btn')?.addEventListener('click', () => {
+            showScreen('home');
+          });
+          return;
+        }
 
         if (!syncLoggedIn) {
           alertsSummarySection.innerHTML = `
@@ -637,36 +666,11 @@
           return;
         }
 
-        if (!summariesEnabled) {
-          alertsSummarySection.innerHTML = `
-            <div class="soft-panel p-3">
-              <div class="section-title">Forum summaries</div>
-              <p class="small text-secondary mb-0">
-                Forum summaries were not selected on the Home page.
-              </p>
-            </div>
-            <div class="soft-panel p-3 mt-3">
-              <div class="section-title">Notifications</div>
-              <p class="small text-secondary mb-0">
-                Content change notifications can be added here next.
-              </p>
-            </div>
-          `;
-          return;
-        }
-
         if (selectedUnits.length === 0) {
           alertsSummarySection.innerHTML = `
             <div class="soft-panel p-3">
-              <div class="section-title">Forum summaries</div>
               <p class="small text-secondary mb-0">
-                No units are currently selected for summaries.
-              </p>
-            </div>
-            <div class="soft-panel p-3 mt-3">
-              <div class="section-title">Notifications</div>
-              <p class="small text-secondary mb-0">
-                Content change notifications can be added here next.
+                No units are currently selected for alerts.
               </p>
             </div>
           `;
@@ -674,56 +678,36 @@
         }
 
         alertsSummarySection.innerHTML = `
-          <div class="soft-panel p-3">
-            <div class="section-title">Forum summaries</div>
-            <p class="small text-secondary mb-3">
-              Choose how often you want summary digests and which units to include.
-            </p>
-
-            <div class="d-grid gap-2 mb-3">
-              <label class="preference-option selected">
-                <div class="d-flex gap-3 align-items-start">
-                  <input class="form-check-input" type="radio" name="summary-frequency" checked />
-                  <div>
-                    <div class="fw-semibold">Weekly digest</div>
-                    <div class="small text-secondary">One summary each week for selected units</div>
-                  </div>
-                </div>
-              </label>
-              <label class="preference-option">
-                <div class="d-flex gap-3 align-items-start">
-                  <input class="form-check-input" type="radio" name="summary-frequency" />
-                  <div>
-                    <div class="fw-semibold">Daily digest</div>
-                    <div class="small text-secondary">A more frequent summary of forum activity</div>
-                  </div>
-                </div>
-              </label>
-            </div>
-
-            <div class="section-title">Include units</div>
-            <div class="d-grid gap-2">
+          <table class="table sync-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Unit</th>
+                <th>Weekly</th>
+                <th>Daily</th>
+                <th>Changes</th>
+              </tr>
+            </thead>
+            <tbody>
               ${selectedUnits
                 .map(
                   (unit) => `
-                    <label class="preference-option selected">
-                      <div class="d-flex gap-3 align-items-start">
-                        <input class="form-check-input" type="checkbox" checked />
-                        <div class="fw-semibold">${unit}</div>
-                      </div>
-                    </label>
+                    <tr>
+                      <td class="sync-unit-cell">${unit}</td>
+                      <td class="text-center ${summariesEnabled ? '' : 'sync-cell-disabled'}">
+                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? 'checked' : 'disabled'} />
+                      </td>
+                      <td class="text-center ${summariesEnabled ? '' : 'sync-cell-disabled'}">
+                        <input class="form-check-input" type="checkbox" ${summariesEnabled ? '' : 'disabled'} />
+                      </td>
+                      <td class="text-center ${notificationsEnabled ? '' : 'sync-cell-disabled'}">
+                        <input class="form-check-input" type="checkbox" ${notificationsEnabled ? '' : 'disabled'} />
+                      </td>
+                    </tr>
                   `
                 )
                 .join('')}
-            </div>
-          </div>
-
-          <div class="soft-panel p-3 mt-3">
-            <div class="section-title">Notifications</div>
-            <p class="small text-secondary mb-0">
-              Content change notifications can be added here next.
-            </p>
-          </div>
+            </tbody>
+          </table>
         `;
       }
 
