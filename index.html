@@ -124,6 +124,12 @@
         margin-top: 0.2rem;
       }
 
+      .mock-note {
+        background: #f8fffb;
+        border: 1px solid #d8ebe0;
+        border-radius: 0.85rem;
+      }
+
       .bottom-nav {
         position: absolute;
         left: 0;
@@ -230,28 +236,6 @@
             </div>
           </div>
 
-          <div class="soft-panel p-3 mb-3">
-            <div class="section-title">Current selection</div>
-            <p id="preference-summary" class="small mb-0 text-secondary">
-              No preferences selected yet.
-            </p>
-          </div>
-
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <div class="mini-stat">
-                <div class="small text-secondary">Theme</div>
-                <div class="fw-bold">UNE Green</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="mini-stat">
-                <div class="small text-secondary">Current step</div>
-                <div class="fw-bold">Preferences</div>
-              </div>
-            </div>
-          </div>
-
           <div class="card card-soft">
             <div class="card-body d-flex justify-content-between align-items-center gap-3">
               <div>
@@ -264,13 +248,47 @@
         </section>
 
         <section class="screen" data-screen="lms">
-          <div class="card card-soft">
+          <div class="card card-soft mb-3">
             <div class="card-body">
-              <h2 class="h5 fw-bold">LMS Data Screen</h2>
-              <p class="text-secondary small">Use this section for course selection, due dates, timetable items, or announcements.</p>
-              <div class="placeholder-box mt-3">
-                Add checkboxes, cards, or list items here.
-              </div>
+              <span class="brand-badge text-bg-light text-dark border-0">Mock login</span>
+              <h2 class="h5 fw-bold mt-2 mb-1">Connect to the UNE LMS</h2>
+              <p class="text-secondary small mb-3">
+                Sign in with your student details to continue. This is only a prototype, so any email ending in <strong>@myune.edu.au</strong> will work.
+              </p>
+
+              <form id="lms-login-form" class="mt-3">
+                <div class="mb-3">
+                  <label for="lms-email" class="form-label fw-semibold">Username</label>
+                  <input
+                    id="lms-email"
+                    class="form-control"
+                    type="email"
+                    value="student@myune.edu.au"
+                    placeholder="student@myune.edu.au"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label for="lms-password" class="form-label fw-semibold">Password</label>
+                  <input
+                    id="lms-password"
+                    class="form-control"
+                    type="password"
+                    value="GreenCampus!42"
+                    placeholder="Enter password"
+                  />
+                </div>
+
+                <div class="mock-note p-3 small text-secondary mb-3">
+                  <strong>Prototype note:</strong> users can change both fields, and any `@myune.edu.au` address is treated as a valid mock login.
+                </div>
+
+                <div id="lms-login-status" class="small text-secondary mb-3">
+                  Ready to sign in.
+                </div>
+
+                <button class="btn btn-success w-100" type="submit">Sign in to LMS</button>
+              </form>
             </div>
           </div>
         </section>
@@ -327,7 +345,10 @@
       const screens = document.querySelectorAll('[data-screen]');
       const preferenceCards = document.querySelectorAll('[data-option-card]');
       const preferenceInputs = document.querySelectorAll('[data-option-card] input');
-      const preferenceSummary = document.getElementById('preference-summary');
+      const lmsLoginForm = document.getElementById('lms-login-form');
+      const lmsEmailInput = document.getElementById('lms-email');
+      const lmsPasswordInput = document.getElementById('lms-password');
+      const lmsLoginStatus = document.getElementById('lms-login-status');
 
       function showScreen(target) {
         screens.forEach((screen) => {
@@ -350,11 +371,8 @@
         });
 
         if (selected.length === 0) {
-          preferenceSummary.textContent = 'No preferences selected yet.';
           return;
         }
-
-        preferenceSummary.textContent = `Selected: ${selected.join(', ')}.`;
       }
 
       navButtons.forEach((button) => {
@@ -363,6 +381,29 @@
 
       preferenceInputs.forEach((input) => {
         input.addEventListener('change', updatePreferenceSummary);
+      });
+
+      lmsLoginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const email = lmsEmailInput.value.trim().toLowerCase();
+        const password = lmsPasswordInput.value.trim();
+        const validUneEmail = email.endsWith('@myune.edu.au');
+
+        if (!validUneEmail) {
+          lmsLoginStatus.className = 'small text-danger mb-3';
+          lmsLoginStatus.textContent = 'Please use a valid @myune.edu.au email for this mock login.';
+          return;
+        }
+
+        if (!password) {
+          lmsLoginStatus.className = 'small text-danger mb-3';
+          lmsLoginStatus.textContent = 'Enter any password to continue with the prototype.';
+          return;
+        }
+
+        lmsLoginStatus.className = 'small text-success mb-3';
+        lmsLoginStatus.textContent = `Mock login accepted for ${email}.`;
       });
 
       updatePreferenceSummary();
