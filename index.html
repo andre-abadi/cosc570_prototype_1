@@ -390,6 +390,8 @@
                     </tbody>
                   </table>
                 </div>
+
+                <button id="sync-table-continue-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Continue</button>
               </div>
 
               <div id="sync-empty-view" class="d-none text-center py-3">
@@ -450,6 +452,7 @@
       const syncTableView = document.getElementById('sync-table-view');
       const syncEmptyView = document.getElementById('sync-empty-view');
       const syncToAlertsButton = document.getElementById('sync-to-alerts-btn');
+      const syncTableContinueButton = document.getElementById('sync-table-continue-btn');
       const syncMatrixBody = document.getElementById('sync-matrix-body');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
@@ -496,6 +499,13 @@
         lmsContinueButton.disabled = selectedUnits.length === 0;
       }
 
+      function updateSyncContinueButton() {
+        const anySelected = Array.from(document.querySelectorAll('#sync-matrix-body input[type="checkbox"]'))
+          .some((input) => input.checked && !input.disabled);
+
+        syncTableContinueButton.disabled = !anySelected;
+      }
+
       function buildSyncMatrix() {
         const selectedPreferences = Array.from(preferenceInputs)
           .filter((input) => input.checked)
@@ -513,6 +523,7 @@
 
         syncTableView.classList.toggle('d-none', !hasAnySyncOption);
         syncEmptyView.classList.toggle('d-none', hasAnySyncOption);
+        syncTableContinueButton.disabled = true;
 
         if (!hasAnySyncOption) {
           return;
@@ -542,6 +553,10 @@
             `
           )
           .join('');
+
+        document.querySelectorAll('#sync-matrix-body input[type="checkbox"]').forEach((input) => {
+          input.addEventListener('change', updateSyncContinueButton);
+        });
       }
 
       navButtons.forEach((button) => {
@@ -612,6 +627,12 @@
 
       syncToAlertsButton.addEventListener('click', () => {
         showScreen('alerts');
+      });
+
+      syncTableContinueButton.addEventListener('click', () => {
+        if (!syncTableContinueButton.disabled) {
+          showScreen('alerts');
+        }
       });
 
       updatePreferenceSummary();
