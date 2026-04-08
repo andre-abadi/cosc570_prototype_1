@@ -130,6 +130,39 @@
         border-radius: 0.85rem;
       }
 
+      .sync-table th {
+        font-size: 0.78rem;
+        color: #516056;
+        white-space: nowrap;
+      }
+
+      .sync-table td {
+        vertical-align: middle;
+      }
+
+      .sync-unit-cell {
+        font-weight: 600;
+        min-width: 150px;
+      }
+
+      .sync-pill {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 0.3rem 0.65rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .sync-pill.active {
+        background: var(--une-green-soft);
+        color: var(--une-green-dark);
+      }
+
+      .sync-pill.disabled {
+        background: #e9ecef;
+        color: #7b8680;
+      }
+
       .bottom-nav {
         position: absolute;
         left: 0;
@@ -171,10 +204,7 @@
   <body>
     <div class="app-shell">
       <header class="app-header">
-        <h1 class="h4 fw-bold mb-1">UNE Student Sync</h1>
-        <p class="mb-0 small opacity-75">
-          Single-page mobile-friendly webapp shell for your LMS, calendar, and notification mockup.
-        </p>
+        <h1 class="h4 fw-bold mb-0">UNE Student Sync</h1>
       </header>
 
       <main class="content-area">
@@ -313,13 +343,40 @@
         </section>
 
         <section class="screen" data-screen="share">
-          <div class="card card-soft">
+          <div class="card card-soft mb-3">
             <div class="card-body">
-              <h2 class="h5 fw-bold">Calendar Sharing Screen</h2>
-              <p class="text-secondary small">Use this area for sync options, destination calendar choices, and sharing preferences.</p>
-              <div class="placeholder-box mt-3">
-                Add toggles, dropdowns, or radio buttons here.
-              </div>
+              <h2 class="h5 fw-bold mb-1">Connect your calendar</h2>
+              <p class="text-secondary small mb-3">
+                This mock sign-in works with <strong>Google Calendar</strong> or <strong>Microsoft Outlook</strong>. Use the pre-filled details or enter your own to continue.
+              </p>
+
+              <form id="share-login-form">
+                <div class="mb-3">
+                  <label for="share-email" class="form-label fw-semibold">Email</label>
+                  <input
+                    id="share-email"
+                    class="form-control"
+                    type="email"
+                    value="student.sync@gmail.com"
+                    placeholder="student.sync@gmail.com"
+                  />
+                </div>
+
+                <div class="mb-3">
+                  <label for="share-password" class="form-label fw-semibold">Password</label>
+                  <input
+                    id="share-password"
+                    class="form-control"
+                    type="password"
+                    value="CalendarFlow!42"
+                    placeholder="Enter password"
+                  />
+                </div>
+
+                <div id="share-login-status" class="small mb-3"></div>
+
+                <button id="share-continue-btn" class="btn btn-success w-100" type="submit">Continue</button>
+              </form>
             </div>
           </div>
         </section>
@@ -327,10 +384,26 @@
         <section class="screen" data-screen="alerts">
           <div class="card card-soft">
             <div class="card-body">
-              <h2 class="h5 fw-bold">Notifications Screen</h2>
-              <p class="text-secondary small">Use this section for reminder settings and change notification preferences.</p>
-              <div class="placeholder-box mt-3">
-                Add switches, schedules, or alert settings here.
+              <h2 class="h5 fw-bold mb-1">Choose what to sync</h2>
+              <p class="text-secondary small mb-3">
+                Review sync options for each selected unit. Items not chosen on the home screen are greyed out.
+              </p>
+
+              <div class="table-responsive">
+                <table class="table sync-table align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>Unit</th>
+                      <th>Contact sync</th>
+                      <th>Assessment sync</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sync-matrix-body">
+                    <tr>
+                      <td colspan="3" class="small text-secondary">Sign in above to load sync options.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -368,6 +441,11 @@
       const lmsContinueButton = document.getElementById('lms-continue-btn');
       const unitCards = document.querySelectorAll('[data-unit-card]');
       const unitInputs = document.querySelectorAll('[data-unit-card] input');
+      const shareLoginForm = document.getElementById('share-login-form');
+      const shareEmailInput = document.getElementById('share-email');
+      const sharePasswordInput = document.getElementById('share-password');
+      const shareLoginStatus = document.getElementById('share-login-status');
+      const syncMatrixBody = document.getElementById('sync-matrix-body');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
       const lmsPasswordInput = document.getElementById('lms-password');
@@ -383,6 +461,10 @@
         navButtons.forEach((button) => {
           button.classList.toggle('active', button.dataset.target === target);
         });
+
+        if (target === 'alerts') {
+          buildSyncMatrix();
+        }
       }
 
       function updatePreferenceSummary() {
@@ -407,6 +489,47 @@
         });
 
         lmsContinueButton.disabled = selectedUnits.length === 0;
+      }
+
+      function buildSyncMatrix() {
+        const selectedPreferences = Array.from(preferenceInputs)
+          .filter((input) => input.checked)
+          .map((input) => input.value);
+        const selectedUnits = Array.from(unitInputs)
+          .filter((input) => input.checked)
+          .map((input) => input.closest('[data-unit-card]').querySelector('.fw-semibold').textContent.trim());
+
+        const contactEnabled = selectedPreferences.includes('Synchronising contact time');
+        const assessmentEnabled = selectedPreferences.includes('Synchronising assessments');
+
+        if (selectedUnits.length === 0) {
+          syncMatrixBody.innerHTML = `
+            <tr>
+              <td colspan="3" class="small text-secondary">No units selected yet.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        syncMatrixBody.innerHTML = selectedUnits
+          .map(
+            (unit) => `
+              <tr>
+                <td class="sync-unit-cell">${unit}</td>
+                <td>
+                  <span class="sync-pill ${contactEnabled ? 'active' : 'disabled'}">
+                    ${contactEnabled ? 'Enabled' : 'Greyed out'}
+                  </span>
+                </td>
+                <td>
+                  <span class="sync-pill ${assessmentEnabled ? 'active' : 'disabled'}">
+                    ${assessmentEnabled ? 'Enabled' : 'Greyed out'}
+                  </span>
+                </td>
+              </tr>
+            `
+          )
+          .join('');
       }
 
       navButtons.forEach((button) => {
@@ -456,8 +579,27 @@
         lmsUnitsPane.classList.remove('d-none');
       });
 
+      shareLoginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const email = shareEmailInput.value.trim();
+        const password = sharePasswordInput.value.trim();
+
+        if (!email || !password) {
+          shareLoginStatus.className = 'small text-danger mb-3';
+          shareLoginStatus.textContent = 'Use the pre-filled details or enter any email and password to continue.';
+          return;
+        }
+
+        shareLoginStatus.className = 'small mb-3';
+        shareLoginStatus.textContent = '';
+        buildSyncMatrix();
+        showScreen('alerts');
+      });
+
       updatePreferenceSummary();
       updateUnitSelectionUI();
+      buildSyncMatrix();
     </script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
