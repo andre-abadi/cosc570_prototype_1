@@ -253,6 +253,46 @@
       .workbook-lms-link:hover {
         text-decoration: underline;
       }
+
+      #workbook-print-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .workbook-print-btn {
+        flex: 1;
+        padding: 0.4rem 0;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, var(--une-green) 0%, var(--une-green-dark) 100%);
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .workbook-print-btn:hover {
+        background: linear-gradient(135deg, var(--une-green-dark) 0%, var(--une-green-dark) 100%);
+      }
+
+      @media print {
+        .app-header,
+        .bottom-nav,
+        #workbook-print-actions,
+        .screen:not([data-screen="workbook"]) {
+          display: none !important;
+        }
+        .app-shell,
+        .screen[data-screen="workbook"],
+        .card,
+        .card-body {
+          box-shadow: none !important;
+          border: none !important;
+          max-width: 100% !important;
+          width: 100% !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -480,6 +520,11 @@
           <div class="card card-soft">
             <div class="card-body">
               <h2 class="h5 fw-bold mb-1">📓 Offline Workbook</h2>
+              <div id="workbook-print-actions" class="d-none">
+                <button class="workbook-print-btn" id="print-a4-btn" type="button">🖨 A4</button>
+                <button class="workbook-print-btn" id="print-a3-btn" type="button">🖨 A3</button>
+                <button class="workbook-print-btn" id="export-excel-btn" type="button">📊 Excel</button>
+              </div>
               <div id="workbook-content"></div>
             </div>
           </div>
@@ -542,6 +587,8 @@
       const lmsLoginPane = document.getElementById('lms-login-pane');
       const lmsUnitsPane = document.getElementById('lms-units-pane');
       const workbookContent = document.getElementById('workbook-content');
+      const workbookPrintActions = document.getElementById('workbook-print-actions');
+      let currentWorkbookData = [];
       let syncCompleted = false;
       let syncInProgress = false;
       let syncProgressTimer = null;
@@ -650,6 +697,8 @@
         const contactEnabled = selectedPreferences.includes('Synchronising contact time');
         const assessmentEnabled = selectedPreferences.includes('Synchronising assessments');
 
+        workbookPrintActions.classList.add('d-none');
+
         if (!contactEnabled && !assessmentEnabled) {
           workbookContent.innerHTML = `
             <div class="soft-panel p-3 text-center">
@@ -706,6 +755,13 @@
           }
         });
 
+        currentWorkbookData = [];
+        workbookDayOrder.forEach((day) => {
+          (eventsByDay[day] || []).forEach((event) => {
+            currentWorkbookData.push({ day, time: event.time, label: event.label, unit: event.unit, type: event.type });
+          });
+        });
+
         const dayRows = workbookDayOrder
           .map((day) => {
             const dayEvents = eventsByDay[day];
@@ -751,7 +807,38 @@
         workbookContent.innerHTML = `
           ${dayRows}
         `;
+        workbookPrintActions.classList.remove('d-none');
       }
+
+      function printWorkbook(pageSize) {
+        const style = document.createElement('style');
+        style.id = 'workbook-print-size';
+        style.textContent = `@page { size: ${pageSize} portrait; margin: 1.5cm; }`;
+        document.head.appendChild(style);
+        window.print();
+        document.head.removeChild(style);
+      }
+
+      function exportWorkbookCSV() {
+        const rows = [['Day', 'Time', 'Unit', 'Event', 'Type']];
+        currentWorkbookData.forEach((e) => {
+          rows.push([e.day, e.time, e.unit, e.label, e.type === 'assessment' ? 'Assessment' : 'Contact']);
+        });
+        const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'workbook.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      document.getElementById('print-a4-btn').addEventListener('click', () => printWorkbook('A4'));
+      document.getElementById('print-a3-btn').addEventListener('click', () => printWorkbook('A3'));
+      document.getElementById('export-excel-btn').addEventListener('click', exportWorkbookCSV);
 
       function resetSyncTableState() {
         syncCompleted = false;
