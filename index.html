@@ -526,6 +526,7 @@
                 <button class="workbook-print-btn" id="export-excel-btn" type="button">📊 Excel</button>
               </div>
               <div id="workbook-content"></div>
+              <button id="workbook-choose-units-btn" class="btn btn-success w-100 mt-3 d-none" type="button">Re-Choose Units</button>
             </div>
           </div>
         </section>
@@ -588,6 +589,7 @@
       const lmsUnitsPane = document.getElementById('lms-units-pane');
       const workbookContent = document.getElementById('workbook-content');
       const workbookPrintActions = document.getElementById('workbook-print-actions');
+      const workbookChooseUnitsBtn = document.getElementById('workbook-choose-units-btn');
       let currentWorkbookData = [];
       let syncCompleted = false;
       let syncInProgress = false;
@@ -713,6 +715,7 @@
         const assessmentEnabled = selectedPreferences.includes('Synchronising assessments');
 
         workbookPrintActions.classList.add('d-none');
+        workbookChooseUnitsBtn.classList.add('d-none');
 
         if (!contactEnabled && !assessmentEnabled) {
           workbookContent.innerHTML = `
@@ -813,19 +816,16 @@
           })
           .join('');
 
-        const lastEventDay = workbookDays.slice().reverse().find(({ label }) => eventsByDay[label] && eventsByDay[label].length > 0);
-        const scrapedUntilDate = lastEventDay ? (() => {
-          const idx = workbookDays.findIndex((d) => d.label === lastEventDay.label);
-          const base = new Date();
-          base.setHours(0, 0, 0, 0);
-          base.setDate(base.getDate() + idx + 2);
-          return `${base.getDate()} ${WB_MONTHS[base.getMonth()]} ${base.getFullYear()}`;
-        })() : null;
+        const base = new Date();
+        base.setHours(0, 0, 0, 0);
+        base.setDate(base.getDate() + 8);
+        const scrapedUntilDate = `${base.getDate()} ${WB_MONTHS[base.getMonth()]} ${base.getFullYear()}`;
         workbookContent.innerHTML = `
           ${dayRows}
-          ${scrapedUntilDate ? `<p class="small text-secondary text-center mt-2 mb-0">Scraped until: ${scrapedUntilDate}</p>` : ''}
+          <p class="small text-secondary text-center mt-2 mb-0">Scraped until: ${scrapedUntilDate}</p>
         `;
         workbookPrintActions.classList.remove('d-none');
+        workbookChooseUnitsBtn.classList.remove('d-none');
       }
 
       function printWorkbook(pageSize) {
@@ -857,6 +857,11 @@
       document.getElementById('print-a4-btn').addEventListener('click', () => printWorkbook('A4'));
       document.getElementById('print-a3-btn').addEventListener('click', () => printWorkbook('A3'));
       document.getElementById('export-excel-btn').addEventListener('click', exportWorkbookCSV);
+      workbookChooseUnitsBtn.addEventListener('click', () => {
+        showScreen('lms');
+        lmsLoginPane.classList.add('d-none');
+        lmsUnitsPane.classList.remove('d-none');
+      });
 
       function resetSyncTableState() {
         syncCompleted = false;
