@@ -598,28 +598,43 @@
 
       const workbookEvents = {
         COSC570: {
-          lecture: { day: 'Mon Apr 13', time: '9:00-11:00', label: 'COSC570 Lecture' },
-          lab: { day: 'Wed Apr 15', time: '13:00-15:00', label: 'COSC570 Lab' },
-          assessment: { day: 'Thu Apr 16', time: '23:59', label: 'COSC570 Assessment Due' },
+          lecture: { dayOfWeek: 1, time: '9:00-11:00', label: 'COSC570 Lecture' },
+          lab: { dayOfWeek: 3, time: '13:00-15:00', label: 'COSC570 Lab' },
+          assessment: { dayOfWeek: 4, time: '23:59', label: 'COSC570 Assessment Due' },
         },
         COSC551: {
-          lecture: { day: 'Wed Apr 15', time: '9:00-11:00', label: 'COSC551 Lecture' },
-          lab: { day: 'Mon Apr 13', time: '13:00-15:00', label: 'COSC551 Lab' },
-          assessment: { day: 'Fri Apr 17', time: '23:59', label: 'COSC551 Assessment Due' },
+          lecture: { dayOfWeek: 3, time: '9:00-11:00', label: 'COSC551 Lecture' },
+          lab: { dayOfWeek: 1, time: '13:00-15:00', label: 'COSC551 Lab' },
+          assessment: { dayOfWeek: 5, time: '23:59', label: 'COSC551 Assessment Due' },
         },
         STAT420: {
-          lecture: { day: 'Tue Apr 14', time: '10:00-12:00', label: 'STAT420 Lecture' },
-          lab: { day: 'Thu Apr 16', time: '13:00-15:00', label: 'STAT420 Lab' },
-          assessment: { day: 'Sat Apr 18', time: '23:59', label: 'STAT420 Assessment Due' },
+          lecture: { dayOfWeek: 2, time: '10:00-12:00', label: 'STAT420 Lecture' },
+          lab: { dayOfWeek: 4, time: '13:00-15:00', label: 'STAT420 Lab' },
+          assessment: { dayOfWeek: 6, time: '23:59', label: 'STAT420 Assessment Due' },
         },
         STAT430: {
-          lecture: { day: 'Thu Apr 16', time: '9:00-11:00', label: 'STAT430 Lecture' },
-          lab: { day: 'Tue Apr 14', time: '14:00-16:00', label: 'STAT430 Lab' },
-          assessment: { day: 'Sun Apr 19', time: '23:59', label: 'STAT430 Assessment Due' },
+          lecture: { dayOfWeek: 4, time: '9:00-11:00', label: 'STAT430 Lecture' },
+          lab: { dayOfWeek: 2, time: '14:00-16:00', label: 'STAT430 Lab' },
+          assessment: { dayOfWeek: 0, time: '23:59', label: 'STAT430 Assessment Due' },
         },
       };
 
-      const workbookDayOrder = ['Mon Apr 13', 'Tue Apr 14', 'Wed Apr 15', 'Thu Apr 16', 'Fri Apr 17', 'Sat Apr 18', 'Sun Apr 19'];
+      const WB_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const WB_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      function formatWorkbookDay(date) {
+        return `${WB_DAYS[date.getDay()]} ${date.getDate()} ${WB_MONTHS[date.getMonth()]}`;
+      }
+
+      function getWorkbookDays() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() + i + 1);
+          return { label: formatWorkbookDay(d), dayOfWeek: d.getDay() };
+        });
+      }
 
       function showScreen(target) {
         screens.forEach((screen) => {
@@ -719,9 +734,10 @@
           return;
         }
 
+        const workbookDays = getWorkbookDays();
         const eventsByDay = {};
-        workbookDayOrder.forEach((day) => {
-          eventsByDay[day] = [];
+        workbookDays.forEach(({ label }) => {
+          eventsByDay[label] = [];
         });
 
         selectedUnits.forEach((unit) => {
@@ -730,40 +746,33 @@
             return;
           }
 
+          const dayLabelFor = (dow) => {
+            const match = workbookDays.find((d) => d.dayOfWeek === dow);
+            return match ? match.label : null;
+          };
+
           if (contactEnabled) {
-            eventsByDay[unitEvents.lecture.day].push({
-              time: unitEvents.lecture.time,
-              label: unitEvents.lecture.label,
-              unit,
-              type: 'contact',
-            });
-            eventsByDay[unitEvents.lab.day].push({
-              time: unitEvents.lab.time,
-              label: unitEvents.lab.label,
-              unit,
-              type: 'contact',
-            });
+            const lectureDay = dayLabelFor(unitEvents.lecture.dayOfWeek);
+            if (lectureDay) eventsByDay[lectureDay].push({ time: unitEvents.lecture.time, label: unitEvents.lecture.label, unit, type: 'contact' });
+            const labDay = dayLabelFor(unitEvents.lab.dayOfWeek);
+            if (labDay) eventsByDay[labDay].push({ time: unitEvents.lab.time, label: unitEvents.lab.label, unit, type: 'contact' });
           }
 
           if (assessmentEnabled) {
-            eventsByDay[unitEvents.assessment.day].push({
-              time: `DUE ${unitEvents.assessment.time}`,
-              label: unitEvents.assessment.label,
-              unit,
-              type: 'assessment',
-            });
+            const assessDay = dayLabelFor(unitEvents.assessment.dayOfWeek);
+            if (assessDay) eventsByDay[assessDay].push({ time: `DUE ${unitEvents.assessment.time}`, label: unitEvents.assessment.label, unit, type: 'assessment' });
           }
         });
 
         currentWorkbookData = [];
-        workbookDayOrder.forEach((day) => {
+        workbookDays.forEach(({ label: day }) => {
           (eventsByDay[day] || []).forEach((event) => {
             currentWorkbookData.push({ day, time: event.time, label: event.label, unit: event.unit, type: event.type });
           });
         });
 
-        const dayRows = workbookDayOrder
-          .map((day) => {
+        const dayRows = workbookDays
+          .map(({ label: day }) => {
             const dayEvents = eventsByDay[day];
             if (!dayEvents || dayEvents.length === 0) {
               return `
@@ -804,8 +813,17 @@
           })
           .join('');
 
+        const lastEventDay = workbookDays.slice().reverse().find(({ label }) => eventsByDay[label] && eventsByDay[label].length > 0);
+        const scrapedUntilDate = lastEventDay ? (() => {
+          const idx = workbookDays.findIndex((d) => d.label === lastEventDay.label);
+          const base = new Date();
+          base.setHours(0, 0, 0, 0);
+          base.setDate(base.getDate() + idx + 2);
+          return `${base.getDate()} ${WB_MONTHS[base.getMonth()]} ${base.getFullYear()}`;
+        })() : null;
         workbookContent.innerHTML = `
           ${dayRows}
+          ${scrapedUntilDate ? `<p class="small text-secondary text-center mt-2 mb-0">Scraped until: ${scrapedUntilDate}</p>` : ''}
         `;
         workbookPrintActions.classList.remove('d-none');
       }
