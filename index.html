@@ -452,9 +452,6 @@
           <div class="card card-soft">
             <div class="card-body">
               <h2 class="h5 fw-bold mb-1">📓 Offline Workbook</h2>
-              <p class="text-secondary small mb-3">
-                Your weekly offline workbook will appear here.
-              </p>
               <div id="workbook-content"></div>
             </div>
           </div>
@@ -690,14 +687,9 @@
             const eventItems = dayEvents
               .map(
                 (event, idx) => `
-                  <div class="form-check mb-1">
-                    <input class="form-check-input" type="checkbox" id="workbook-${day.replace(/\s+/g, '-').toLowerCase()}-${idx}" />
-                    <div class="workbook-entry-row">
-                      <label class="form-check-label small" for="workbook-${day.replace(/\s+/g, '-').toLowerCase()}-${idx}">
-                        <strong>${event.time}</strong> ${event.label}
-                      </label>
-                      <a class="workbook-lms-link" href="#" aria-label="Open ${event.label} in LMS">🔗 LMS</a>
-                    </div>
+                  <div class="workbook-entry-row mb-1">
+                    <span class="small"><strong>${event.time}</strong> ${event.label}</span>
+                    <a class="workbook-lms-link" href="#" aria-label="Open ${event.label} in LMS">🔗 LMS</a>
                   </div>
                 `
               )
