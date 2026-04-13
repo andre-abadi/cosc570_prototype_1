@@ -305,6 +305,37 @@
         color: var(--une-green) !important;
       }
 
+      .lms-agnostic-note {
+        font-size: 0.75rem;
+        color: #5e6e84;
+        text-align: center;
+        margin: 0.75rem 0 0.5rem;
+      }
+
+      .lms-agnostic-logos {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+      }
+
+      .lms-logo-card {
+        background: #ffffff;
+        border: 1px solid #dbe4ef;
+        border-radius: 0.7rem;
+        padding: 0.4rem;
+        height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .lms-logo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: saturate(0.95);
+      }
+
       @media print {
         .app-header,
         .bottom-nav,
@@ -412,6 +443,28 @@
                 <div id="lms-login-status" class="small mb-3"></div>
 
                 <button class="btn btn-success w-100" type="submit">Sign in to LMS</button>
+
+                <p class="lms-agnostic-note">Works with universities across Australia</p>
+                <div class="lms-agnostic-logos" aria-label="Australian university logos">
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/9/9a/University_of_Sydney_coat_of_arms.png" alt="University of Sydney logo" loading="lazy" />
+                  </div>
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/The_University_of_Melbourne_Coat_of_Arms.svg/330px-The_University_of_Melbourne_Coat_of_Arms.svg.png" alt="University of Melbourne logo" loading="lazy" />
+                  </div>
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/6/6e/University_of_New_South_Wales_Crest_Variant_2022.png" alt="UNSW Sydney logo" loading="lazy" />
+                  </div>
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Arms_of_Monash_University.svg/330px-Arms_of_Monash_University.svg.png" alt="Monash University logo" loading="lazy" />
+                  </div>
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/7/76/University_of_Queensland_%28crest%29.svg/330px-University_of_Queensland_%28crest%29.svg.png" alt="University of Queensland logo" loading="lazy" />
+                  </div>
+                  <div class="lms-logo-card">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Australian_National_University_coat_of_arms.svg/330px-Australian_National_University_coat_of_arms.svg.png" alt="Australian National University logo" loading="lazy" />
+                  </div>
+                </div>
               </form>
             </div>
           </div>
