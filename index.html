@@ -412,7 +412,7 @@
         <section class="screen" data-screen="lms">
           <div id="lms-login-pane" class="card card-soft mb-3">
             <div class="card-body">
-              <h2 class="h5 fw-bold mb-1">Connect to your LMS</h2>
+              <h2 class="h5 fw-bold mb-1">Sign into your University</h2>
               <p class="text-secondary small mb-3">
                 Sign in with your student details to continue.
               </p>
@@ -442,7 +442,7 @@
 
                 <div id="lms-login-status" class="small mb-3"></div>
 
-                <button class="btn btn-success w-100" type="submit">Sign in to LMS</button>
+                <button class="btn btn-success w-100" type="submit">Sign In</button>
 
                 <p class="lms-agnostic-note">Works with universities across Australia</p>
                 <div class="lms-agnostic-logos" aria-label="Australian university logos">
@@ -473,31 +473,31 @@
             <div class="card-body">
               <h2 class="h5 fw-bold mb-1">Select units to use</h2>
               <p class="text-secondary small mb-3">
-                Choose which units should act as data sources for the rest of the prototype.
+                Deselect any units you're not interested in.
               </p>
 
               <div class="d-grid gap-2" id="lms-units">
                 <label class="preference-option" data-unit-card>
                   <div class="d-flex gap-3 align-items-start">
-                    <input class="form-check-input" type="checkbox" />
+                    <input class="form-check-input" type="checkbox" checked />
                     <div class="fw-semibold">COSC570 User Experience and Interaction Design</div>
                   </div>
                 </label>
                 <label class="preference-option" data-unit-card>
                   <div class="d-flex gap-3 align-items-start">
-                    <input class="form-check-input" type="checkbox" />
+                    <input class="form-check-input" type="checkbox" checked />
                     <div class="fw-semibold">COSC551 Deep Learning</div>
                   </div>
                 </label>
                 <label class="preference-option" data-unit-card>
                   <div class="d-flex gap-3 align-items-start">
-                    <input class="form-check-input" type="checkbox" />
+                    <input class="form-check-input" type="checkbox" checked />
                     <div class="fw-semibold">STAT420 Advanced Statistical Modelling</div>
                   </div>
                 </label>
                 <label class="preference-option" data-unit-card>
                   <div class="d-flex gap-3 align-items-start">
-                    <input class="form-check-input" type="checkbox" />
+                    <input class="form-check-input" type="checkbox" checked />
                     <div class="fw-semibold">STAT430 Statistical Learning</div>
                   </div>
                 </label>
@@ -902,9 +902,12 @@
         base.setHours(0, 0, 0, 0);
         base.setDate(base.getDate() + 8);
         const scrapedUntilDate = `${base.getDate()} ${WB_MONTHS[base.getMonth()]} ${base.getFullYear()}`;
+        const today = new Date();
+        const lastUpdatedDate = `${today.getDate()} ${WB_MONTHS[today.getMonth()]} ${today.getFullYear()}`;
         workbookContent.innerHTML = `
           ${dayRows}
-          <p class="small text-secondary text-center mt-2 mb-0">Scraped until: ${scrapedUntilDate}</p>
+          <p class="small text-secondary text-center mt-2 mb-0">Last Updated: ${lastUpdatedDate}</p>
+          <p class="small text-secondary text-center mb-0">Scraped until: ${scrapedUntilDate}</p>
         `;
         workbookPrintActions.classList.remove('d-none');
         workbookChooseUnitsBtn.classList.remove('d-none');
