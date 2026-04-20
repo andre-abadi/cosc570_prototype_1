@@ -25,7 +25,7 @@ Open `index.html` in a browser.
 - ✅ Reduces missed deadlines by centralising sync choices.
 - ✅ Students are already using Outlook, Google Calendar and Excel, showing a clear market for external integration.
 - ✅ Personalised visual layout design.
-- 🟡 Could integrate with calendars, summaries, or study tools.
+- ✅ Could integrate with calendars, summaries, or study tools.
 - ❌ Progress tracking stimulates active planning.
 - ✅ Reduce repeated visits to the LMS.
 - ✅ Differentiate between similar events at a glance.
@@ -38,7 +38,7 @@ Open `index.html` in a browser.
 - ✅ Avoids digital clutter.
 - ❌ Public dashboard builds transparency and shared accountability.
 - ❌ Crowdsourced confirmations increase accuracy over time.
-- 🟡 Timestamp and changelog provide students with trust of the data.
+- ✅ Timestamp and changelog provide students with trust of the data.
 - ✅ Immediate guidance at the right moment.
 - ✅ Stronger sense of place within institutional tool.
 - ✅ Simple guided setup.

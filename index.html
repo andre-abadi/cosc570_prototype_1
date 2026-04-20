@@ -254,6 +254,34 @@
         text-decoration: underline;
       }
 
+      .alert-feed-item {
+        border: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .alert-feed-unit-cosc570 {
+        background: #f2b84b;
+        color: #2f2412;
+      }
+
+      .alert-feed-unit-cosc551 {
+        background: #2fa7a0;
+        color: #0f2c2a;
+      }
+
+      .alert-feed-unit-stat420 {
+        background: #5b6c8f;
+        color: #f4f7ff;
+      }
+
+      .alert-feed-unit-stat430 {
+        background: #8a5e9e;
+        color: #f9f4ff;
+      }
+
+      .alert-feed-meta {
+        opacity: 0.88;
+      }
+
       #workbook-print-actions {
         display: flex;
         gap: 0.5rem;
@@ -598,6 +626,19 @@
           </div>
         </section>
 
+        <section class="screen" data-screen="alerts-feed">
+          <div class="card card-soft">
+            <div class="card-body">
+              <h2 class="h5 fw-bold mb-1">Alert Activity</h2>
+              <p class="text-secondary small mb-3">
+                Chronological updates filtered to your selected units.
+              </p>
+
+              <div id="alerts-feed-section"></div>
+            </div>
+          </div>
+        </section>
+
         <section class="screen" data-screen="workbook">
           <div class="card card-soft">
             <div class="card-body">
@@ -663,6 +704,7 @@
       const syncTableContinueButton = document.getElementById('sync-table-continue-btn');
       const syncMatrixBody = document.getElementById('sync-matrix-body');
       const alertsSummarySection = document.getElementById('alerts-summary-section');
+      const alertsFeedSection = document.getElementById('alerts-feed-section');
       const lmsLoginForm = document.getElementById('lms-login-form');
       const lmsEmailInput = document.getElementById('lms-email');
       const lmsPasswordInput = document.getElementById('lms-password');
@@ -676,9 +718,18 @@
       let syncCompleted = false;
       let syncInProgress = false;
       let syncProgressTimer = null;
-      let alertsCompleted = false;
       let alertsInProgress = false;
       let alertsProgressTimer = null;
+      let alertsConfigured = false;
+
+      const dummyAlertsFeed = [
+        { unit: 'COSC570', minutesAgo: 420, title: 'Assessment due date adjusted', detail: 'Assignment 2 due changed to Thu 23:59.' },
+        { unit: 'STAT420', minutesAgo: 375, title: 'Lecture room update', detail: 'Week 7 lecture changed to room W43.' },
+        { unit: 'COSC551', minutesAgo: 290, title: 'Lab worksheet updated', detail: 'New worksheet version uploaded to LMS.' },
+        { unit: 'STAT430', minutesAgo: 180, title: 'Quiz window reminder', detail: 'Quiz opens tomorrow at 09:00.' },
+        { unit: 'COSC570', minutesAgo: 95, title: 'Forum summary available', detail: 'Weekly key points summary has been posted.' },
+        { unit: 'COSC551', minutesAgo: 45, title: 'Assessment rubric revised', detail: 'Clarified marking criteria now visible.' },
+      ];
 
       const workbookEvents = {
         COSC570: {
@@ -720,26 +771,103 @@
         });
       }
 
+      function hasSelectedAlertOptions() {
+        const selectedPreferences = Array.from(preferenceInputs)
+          .filter((input) => input.checked)
+          .map((input) => input.value);
+        return selectedPreferences.includes('Summaries of forums') || selectedPreferences.includes('Notifications if content changes');
+      }
+
+      function formatAlertTimestamp(date) {
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${WB_DAYS[date.getDay()]} ${date.getDate()} ${WB_MONTHS[date.getMonth()]} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      }
+
+      function buildAlertsFeedPage() {
+        const selectedUnits = getSelectedUnitCodes();
+
+        if (selectedUnits.length === 0) {
+          alertsFeedSection.innerHTML = `
+            <div class="soft-panel p-3 text-center">
+              <p class="small text-secondary mb-0">No units selected. Choose units on the LMS page to see alert history.</p>
+            </div>
+          `;
+          return;
+        }
+
+        const now = new Date();
+        const filteredAlerts = dummyAlertsFeed
+          .filter((item) => selectedUnits.includes(item.unit))
+          .sort((a, b) => b.minutesAgo - a.minutesAgo)
+          .map((item) => {
+            const ts = new Date(now.getTime() - item.minutesAgo * 60 * 1000);
+            return { ...item, timestamp: formatAlertTimestamp(ts) };
+          });
+
+        if (filteredAlerts.length === 0) {
+          alertsFeedSection.innerHTML = `
+            <div class="soft-panel p-3 text-center">
+              <p class="small text-secondary mb-0">No dummy alerts are available for your selected units yet.</p>
+            </div>
+          `;
+          return;
+        }
+
+        alertsFeedSection.innerHTML = filteredAlerts
+          .map(
+            (alert) => `
+              <div class="soft-panel p-3 mb-2 alert-feed-item ${
+                alert.unit === 'COSC570'
+                  ? 'alert-feed-unit-cosc570'
+                  : alert.unit === 'COSC551'
+                  ? 'alert-feed-unit-cosc551'
+                  : alert.unit === 'STAT420'
+                  ? 'alert-feed-unit-stat420'
+                  : 'alert-feed-unit-stat430'
+              }">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                  <div class="fw-semibold small">${alert.title}</div>
+                  <span class="badge bg-light text-dark border">${alert.unit}</span>
+                </div>
+                <div class="small mt-1 alert-feed-meta">${alert.detail}</div>
+                <div class="small mt-2 alert-feed-meta">${alert.timestamp}</div>
+              </div>
+            `
+          )
+          .join('');
+      }
+
       function showScreen(target) {
+        let resolvedTarget = target;
+        const syncLoggedIn = syncLoginPane.classList.contains('d-none');
+
+        if (target === 'alerts' && alertsConfigured && hasSelectedAlertOptions() && syncLoggedIn) {
+          resolvedTarget = 'alerts-feed';
+        }
+
         screens.forEach((screen) => {
-          screen.classList.toggle('active', screen.dataset.screen === target);
+          screen.classList.toggle('active', screen.dataset.screen === resolvedTarget);
         });
 
+        const activeNavTarget = resolvedTarget === 'alerts-feed' ? 'alerts' : resolvedTarget;
         navButtons.forEach((button) => {
-          button.classList.toggle('active', button.dataset.target === target);
+          button.classList.toggle('active', button.dataset.target === activeNavTarget);
         });
 
-        if (target === 'sync' && !syncOptionsPane.classList.contains('d-none')) {
+        if (resolvedTarget === 'sync' && !syncOptionsPane.classList.contains('d-none')) {
           resetSyncTableState();
           buildSyncMatrix();
         }
 
-        if (target === 'alerts') {
-          resetAlertsActionState();
+        if (resolvedTarget === 'alerts') {
           buildAlertsPage();
         }
 
-        if (target === 'workbook') {
+        if (resolvedTarget === 'alerts-feed') {
+          buildAlertsFeedPage();
+        }
+
+        if (resolvedTarget === 'workbook') {
           buildWorkbookPage();
         }
       }
@@ -965,16 +1093,6 @@
         syncTableContinueButton.classList.add('d-none');
       }
 
-      function resetAlertsActionState() {
-        alertsCompleted = false;
-        alertsInProgress = false;
-
-        if (alertsProgressTimer) {
-          clearTimeout(alertsProgressTimer);
-          alertsProgressTimer = null;
-        }
-      }
-
       function updateSyncContinueButton() {
         const anySelected = Array.from(document.querySelectorAll('#sync-matrix-body input[type="checkbox"]'))
           .some((input) => input.checked && !input.disabled);
@@ -1133,29 +1251,16 @@
             </tbody>
           </table>
 
-          <button id="alerts-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>Alert me</button>
-          <button id="alerts-continue-btn" class="btn btn-success w-100 mt-3 d-none" type="button">Continue</button>
+          <button id="alerts-action-btn" class="btn btn-success w-100 mt-3" type="button" disabled>${alertsConfigured ? 'Update alerts' : 'Alert me'}</button>
           <div id="alerts-progress-status" class="small text-center mt-2 d-none"></div>
         `;
 
         const alertsActionButton = document.getElementById('alerts-action-btn');
-        const alertsContinueButton = document.getElementById('alerts-continue-btn');
         const alertsProgressStatus = document.getElementById('alerts-progress-status');
         const alertsOptions = document.querySelectorAll('.alerts-option');
 
         const updateAlertsActionState = () => {
           const anySelected = Array.from(alertsOptions).some((input) => input.checked);
-
-          if (alertsCompleted) {
-            alertsActionButton.classList.add('d-none');
-            alertsContinueButton.classList.remove('d-none');
-            alertsProgressStatus.className = 'small text-success text-center mt-2';
-            alertsProgressStatus.textContent = 'Done';
-            return;
-          }
-
-          alertsActionButton.classList.remove('d-none');
-          alertsContinueButton.classList.add('d-none');
           alertsProgressStatus.className = 'small text-center mt-2 d-none';
           alertsProgressStatus.textContent = '';
           alertsActionButton.disabled = alertsInProgress || !anySelected;
@@ -1178,15 +1283,10 @@
 
           alertsProgressTimer = setTimeout(() => {
             alertsInProgress = false;
-            alertsCompleted = true;
+            alertsConfigured = true;
             alertsProgressTimer = null;
-            updateAlertsActionState();
+            showScreen('alerts');
           }, 2200);
-        });
-
-        alertsContinueButton.addEventListener('click', () => {
-          const lmsLoggedIn = lmsUnitsPane.classList.contains('d-none') === false;
-          showScreen(lmsLoggedIn ? 'workbook' : 'home');
         });
 
         updateAlertsActionState();
