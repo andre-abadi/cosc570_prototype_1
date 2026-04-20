@@ -22,20 +22,23 @@
 
       body {
         margin: 0;
-        background: linear-gradient(180deg, #eaf0f8 0%, #f7f9fc 100%);
+        background: #eaf0f8;
         color: var(--text-main);
         font-family: Arial, Helvetica, sans-serif;
       }
 
       .app-shell {
-        max-width: 430px;
-        min-height: 100vh;
+        width: min(430px, 100%);
+        height: min(84vh, 810px);
+        min-height: 612px;
         margin: 0 auto;
         background: #ffffff;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
         position: relative;
         overflow: hidden;
         border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
       }
 
       .app-header {
@@ -55,8 +58,10 @@
 
       .content-area {
         background: var(--app-bg);
-        padding: 1rem 1rem 5.5rem;
-        min-height: calc(100vh - 120px);
+        padding: 1rem;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
       }
 
       .screen {
@@ -65,6 +70,14 @@
 
       .screen.active {
         display: block;
+      }
+
+      .screen[data-screen="workbook"],
+      .screen[data-screen="alerts"],
+      .screen[data-screen="alerts-feed"] {
+        height: 100%;
+        overflow-y: auto;
+        padding-right: 0.2rem;
       }
 
       .card-soft {
@@ -167,13 +180,18 @@
       }
 
       .bottom-nav {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        position: relative;
         background: #ffffff;
         border-top: 1px solid #e2e9f2;
         padding: 0.6rem 0.5rem calc(0.6rem + env(safe-area-inset-bottom));
+      }
+
+      @media (max-height: 760px) {
+        .app-shell {
+          height: 100vh;
+          min-height: 0;
+          border-radius: 0;
+        }
       }
 
       .nav-grid {
