@@ -26,7 +26,7 @@ Open `index.html` in a browser.
 - ✅ Students are already using Outlook, Google Calendar and Excel, showing a clear market for external integration.
 - ✅ Personalised visual layout design.
 - ✅ Could integrate with calendars, summaries, or study tools.
-- ❌ Progress tracking stimulates active planning.
+- ✅ Progress tracking stimulates active planning.
 - ✅ Reduce repeated visits to the LMS.
 - ✅ Differentiate between similar events at a glance.
 - ✅ Add intuitiveness to existing Ui.

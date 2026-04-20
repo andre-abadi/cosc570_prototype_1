@@ -268,6 +268,21 @@
         font-weight: 600;
       }
 
+      .workbook-entry-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+      }
+
+      .workbook-done-toggle {
+        margin-top: 0;
+      }
+
+      .workbook-entry-row.workbook-entry-complete {
+        background: transparent !important;
+        color: inherit !important;
+      }
+
       .workbook-lms-link:hover {
         text-decoration: underline;
       }
@@ -783,6 +798,7 @@
       let alertsInProgress = false;
       let alertsProgressTimer = null;
       let alertsConfigured = false;
+      let completedWorkbookItems = new Set();
 
       const dummyAlertsFeed = [
         { unit: 'COSC570', minutesAgo: 420, title: 'Assessment due date adjusted', detail: 'Assignment 2 due changed to Thu 23:59.' },
@@ -1119,6 +1135,8 @@
             const eventItems = dayEvents
               .map(
                 (event, idx) => {
+                  const itemKey = `${day}|${event.time}|${event.label}|${event.unit}|${event.type}|${idx}`;
+                  const isCompleted = completedWorkbookItems.has(itemKey);
                   const unitClass = event.unit === 'COSC570'
                     ? 'workbook-unit-cosc570'
                     : event.unit === 'COSC551'
@@ -1128,9 +1146,18 @@
                     : 'workbook-unit-stat430';
                   const entryClass = event.type === 'assessment' ? 'workbook-entry-assessment' : unitClass;
                   return `
-                  <div class="workbook-entry-row mb-1 ${entryClass}">
+                  <div class="workbook-entry-row mb-1 ${entryClass} ${isCompleted ? 'workbook-entry-complete' : ''}" data-workbook-item-key="${itemKey}">
                     <span class="small"><strong>${event.time}</strong> ${event.label}</span>
-                    <a class="workbook-lms-link" href="#" aria-label="Open ${event.label} in LMS">🔗 LMS</a>
+                    <div class="workbook-entry-actions">
+                      <a class="workbook-lms-link" href="#" aria-label="Open ${event.label} in LMS">🔗 LMS</a>
+                      <input
+                        class="form-check-input workbook-done-toggle"
+                        type="checkbox"
+                        aria-label="Mark ${event.label} as done"
+                        data-workbook-item-key="${itemKey}"
+                        ${isCompleted ? 'checked' : ''}
+                      />
+                    </div>
                   </div>
                 `;
                 }
@@ -1154,7 +1181,7 @@
         workbookContent.innerHTML = `
           <div class="workbook-meta-panel">
             <div class="workbook-meta-label">Progress</div>
-            <div class="workbook-meta-value">Today is ${todayLabel}. Week ${trimesterInfo.weekOfTrimester} of ${trimesterInfo.totalWeeks} in Trimester ${trimesterInfo.trimester}.</div>
+            <div class="workbook-meta-value">${todayLabel}. Week ${trimesterInfo.weekOfTrimester} of ${trimesterInfo.totalWeeks} in Trimester ${trimesterInfo.trimester}.</div>
             <div class="workbook-progress-track" aria-label="Trimester progress">
               <div class="workbook-progress-fill" style="width: ${trimesterInfo.progressPercent}%;"></div>
             </div>
@@ -1164,6 +1191,26 @@
           <p class="small text-secondary text-center mt-2 mb-0">Last Updated: ${lastUpdatedDate}</p>
           <p class="small text-secondary text-center mb-0">Scraped until: ${scrapedUntilDate}</p>
         `;
+
+        workbookContent.querySelectorAll('.workbook-done-toggle').forEach((toggle) => {
+          toggle.addEventListener('change', (event) => {
+            const key = event.target.dataset.workbookItemKey;
+            const row = event.target.closest('.workbook-entry-row');
+
+            if (!key || !row) {
+              return;
+            }
+
+            if (event.target.checked) {
+              completedWorkbookItems.add(key);
+            } else {
+              completedWorkbookItems.delete(key);
+            }
+
+            row.classList.toggle('workbook-entry-complete', event.target.checked);
+          });
+        });
+
         workbookPrintActions.classList.remove('d-none');
         workbookChooseUnitsBtn.classList.remove('d-none');
       }
