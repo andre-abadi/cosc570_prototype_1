@@ -288,6 +288,50 @@
         margin-bottom: 0.75rem;
       }
 
+      .workbook-meta-panel {
+        background: #ffffff;
+        border: 1px solid #dbe4ef;
+        border-radius: 0.85rem;
+        padding: 0.7rem 0.85rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .workbook-meta-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #51627a;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      .workbook-meta-value {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--text-main);
+      }
+
+      .workbook-progress-track {
+        margin-top: 0.45rem;
+        height: 0.55rem;
+        width: 100%;
+        background: #d9e5f4;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .workbook-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--une-green) 0%, var(--une-green-dark) 100%);
+        border-radius: 999px;
+        transition: width 0.25s ease;
+      }
+
+      .workbook-progress-meta {
+        margin-top: 0.45rem;
+        font-size: 0.74rem;
+        color: #51627a;
+      }
+
       .workbook-print-btn {
         flex: 1;
         padding: 0.4rem 0;
@@ -771,6 +815,58 @@
         });
       }
 
+      function getWorkbookTrimesterInfo(today) {
+        const month = today.getMonth() + 1;
+        const day = today.getDate();
+
+        const mdKey = month * 100 + day;
+
+        // Uses UNE 2026 trimester boundaries, but evaluates only month/day so it works any year.
+        // T1: 23 Feb 2026 - 31 May 2026
+        // T2: 22 Jun 2026 - 27 Sep 2026
+        // T3: 19 Oct 2026 - 2 Feb 2027
+        let trimester;
+        let start;
+        let end;
+        let syntheticDate;
+
+        if (mdKey >= 223 && mdKey <= 531) {
+          trimester = 1;
+          start = new Date(2026, 1, 23);
+          end = new Date(2026, 4, 31);
+          syntheticDate = new Date(2026, month - 1, day);
+        } else if (mdKey >= 601 && mdKey <= 927) {
+          trimester = 2;
+          start = new Date(2026, 5, 22);
+          end = new Date(2026, 8, 27);
+          syntheticDate = new Date(2026, month - 1, day);
+        } else {
+          trimester = 3;
+          start = new Date(2026, 9, 19);
+          end = new Date(2027, 1, 2);
+          syntheticDate = new Date(month <= 2 ? 2027 : 2026, month - 1, day);
+
+          if (mdKey >= 203 && mdKey <= 222) {
+            trimester = 1;
+            start = new Date(2026, 1, 23);
+            end = new Date(2026, 4, 31);
+            syntheticDate = new Date(2026, month - 1, day);
+          } else if (mdKey >= 928 && mdKey <= 1018) {
+            syntheticDate = new Date(2026, month - 1, day);
+          }
+        }
+
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+        const totalDays = Math.floor((end - start) / MS_PER_DAY) + 1;
+        const totalWeeks = Math.ceil(totalDays / 7);
+        const rawWeek = Math.floor((syntheticDate - start) / (7 * MS_PER_DAY)) + 1;
+        const weekOfTrimester = Math.min(totalWeeks, Math.max(1, rawWeek));
+        const elapsedDays = Math.floor((syntheticDate - start) / MS_PER_DAY);
+        const progressPercent = Math.max(0, Math.min(100, Math.round((elapsedDays / (totalDays - 1)) * 100)));
+
+        return { trimester, weekOfTrimester, totalWeeks, progressPercent, start, end, syntheticDate };
+      }
+
       function hasSelectedAlertOptions() {
         const selectedPreferences = Array.from(preferenceInputs)
           .filter((input) => input.checked)
@@ -948,6 +1044,12 @@
         }
 
         const workbookDays = getWorkbookDays();
+        const now = new Date();
+        const trimesterInfo = getWorkbookTrimesterInfo(now);
+        const todayLabel = formatWorkbookDay(now);
+        const startLabel = `${trimesterInfo.start.getDate()} ${WB_MONTHS[trimesterInfo.start.getMonth()]}`;
+        const todayProgressLabel = `${trimesterInfo.syntheticDate.getDate()} ${WB_MONTHS[trimesterInfo.syntheticDate.getMonth()]}`;
+        const endLabel = `${trimesterInfo.end.getDate()} ${WB_MONTHS[trimesterInfo.end.getMonth()]}`;
         const eventsByDay = {};
         workbookDays.forEach(({ label }) => {
           eventsByDay[label] = [];
@@ -1030,9 +1132,16 @@
         base.setHours(0, 0, 0, 0);
         base.setDate(base.getDate() + 8);
         const scrapedUntilDate = `${base.getDate()} ${WB_MONTHS[base.getMonth()]} ${base.getFullYear()}`;
-        const today = new Date();
-        const lastUpdatedDate = `${today.getDate()} ${WB_MONTHS[today.getMonth()]} ${today.getFullYear()}`;
+        const lastUpdatedDate = `${now.getDate()} ${WB_MONTHS[now.getMonth()]} ${now.getFullYear()}`;
         workbookContent.innerHTML = `
+          <div class="workbook-meta-panel">
+            <div class="workbook-meta-label">Progress</div>
+            <div class="workbook-meta-value">Today is ${todayLabel}. Week ${trimesterInfo.weekOfTrimester} of ${trimesterInfo.totalWeeks} in Trimester ${trimesterInfo.trimester}.</div>
+            <div class="workbook-progress-track" aria-label="Trimester progress">
+              <div class="workbook-progress-fill" style="width: ${trimesterInfo.progressPercent}%;"></div>
+            </div>
+            <div class="workbook-progress-meta">Start ${startLabel} | Today ${todayProgressLabel} | End ${endLabel}</div>
+          </div>
           ${dayRows}
           <p class="small text-secondary text-center mt-2 mb-0">Last Updated: ${lastUpdatedDate}</p>
           <p class="small text-secondary text-center mb-0">Scraped until: ${scrapedUntilDate}</p>
