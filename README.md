@@ -34,7 +34,7 @@ Open `index.html` in a browser.
 - ✅ Aligns with current behaviour of students maintaing paper diaries.
 
 ### Could Have
-- ❌ Checklist feature gives  sense of control.
+- ✅ Checklist feature gives  sense of control.
 - ✅ Avoids digital clutter.
 - ❌ Public dashboard builds transparency and shared accountability.
 - ❌ Crowdsourced confirmations increase accuracy over time.
